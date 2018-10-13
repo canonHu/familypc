@@ -1,25 +1,31 @@
 const path = require('path');
+// const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const ExtractLess = new ExtractTextPlugin('./style/style.css');
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+// const CleanWebpackPlugin = require('clean-webpack-plugin');
+const extractCSS = new ExtractTextPlugin('stylesheets/[name]-one.css');
+const extractLESS = new ExtractTextPlugin('stylesheets/[name]-two.css');
 
 module.exports = {
     entry: {
-        app: './src/js/index.js',
-        // vendor: [
-        //     'lodash'
-        // ]
-        // another: './src/another-module.js'
+        // polyfills: './src/js/polyfills.js',
+        index: './src/js/index.js'
     },
 
     plugins: [
-        ExtractLess,
-        new CleanWebpackPlugin(['dist']),
+        extractCSS,
+        extractLESS,
         new HtmlWebpackPlugin({
-            title: 'unity title canonHu',
+            title: 'Progressive Web Application',
             template: 'index.ejs'
         })
+
+        // 整个应用程序中全局提供lodash方法
+        // new webpack.ProvidePlugin({
+        //     _: 'lodash'
+            // 只提供join从lodash哪里调用的方法
+            // join: ['lodash', 'join']
+        // })
     ],
 
     module: {
@@ -56,8 +62,12 @@ module.exports = {
                 ]
             },
             {
-                test: /\.less$/,
-                loader: ExtractTextPlugin.extract("style-loader", "css-loader!less-loader")
+                test: /\.css$/,
+                use: extractCSS.extract(['css-loader', 'postcss-loader'])
+            },
+            {
+                test: /\.less$/i,
+                use: extractLESS.extract(['css-loader', 'less-loader'])
             },
             {
                 test: /\.(png|svg|jpg|gif)$/,
@@ -87,7 +97,8 @@ module.exports = {
     },
 
     output: {
-        filename: '[name].bundle.js',
-        path: path.resolve(__dirname, 'dist')
+        filename: '[name].[chunkhash].js',
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: '/'
     }
-};
+}
