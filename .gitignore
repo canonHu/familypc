@@ -1,0 +1,6 @@
+# 安装包
+node_modules
+
+# yarn
+*.lock
+*.log
